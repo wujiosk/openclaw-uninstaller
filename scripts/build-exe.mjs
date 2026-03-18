@@ -7,8 +7,8 @@ const root = process.cwd();
 const distDir = join(root, "dist");
 const seaConfigPath = join(root, "sea-config.json");
 const bundlePath = join(distDir, "app.cjs");
-const blobPath = join(distDir, "claw.blob");
-const exePath = join(distDir, "claw.exe");
+const blobPath = join(distDir, "openclaw-uninstaller.blob");
+const exePath = join(distDir, "openclaw-uninstaller.exe");
 const nodeExe = process.execPath;
 const npxCmd = process.platform === "win32" ? "npx.cmd" : "npx";
 
@@ -40,7 +40,7 @@ writeFileSync(
   JSON.stringify(
     {
       main: "dist/app.cjs",
-      output: "dist/claw.blob",
+      output: "dist/openclaw-uninstaller.blob",
       disableExperimentalSEAWarning: true
     },
     null,

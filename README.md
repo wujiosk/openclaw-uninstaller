@@ -34,7 +34,7 @@ npm run build:exe
 产物位于：
 
 ```text
-dist\claw.exe
+dist\openclaw-uninstaller.exe
 ```
 
 ## 主要文件

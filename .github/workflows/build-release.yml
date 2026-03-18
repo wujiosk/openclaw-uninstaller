@@ -30,10 +30,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openclaw-uninstaller-win-x64
-          path: dist/claw.exe
+          path: dist/openclaw-uninstaller.exe
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/claw.exe
+          files: dist/openclaw-uninstaller.exe
