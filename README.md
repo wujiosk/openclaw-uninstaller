@@ -56,8 +56,8 @@ dist/openclaw-uninstaller-win-x64.zip
 示例：
 
 ```bash
-git tag v0.3.2
-git push origin v0.3.2
+git tag v0.3.3
+git push origin v0.3.3
 ```
 
 ## 主要文件
