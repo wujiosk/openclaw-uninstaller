@@ -26,14 +26,27 @@ jobs:
       - name: Build exe
         run: npm run build:exe
 
+      - name: Create release package
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path dist/openclaw-uninstaller.exe, dist/webui `
+            -DestinationPath dist/openclaw-uninstaller-win-x64.zip `
+            -Force
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: openclaw-uninstaller-win-x64
-          path: dist/openclaw-uninstaller.exe
+          path: |
+            dist/openclaw-uninstaller.exe
+            dist/openclaw-uninstaller-win-x64.zip
+            dist/webui/**
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/openclaw-uninstaller.exe
+          files: |
+            dist/openclaw-uninstaller.exe
+            dist/openclaw-uninstaller-win-x64.zip

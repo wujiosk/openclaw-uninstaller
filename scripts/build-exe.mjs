@@ -1,4 +1,4 @@
-﻿import { mkdirSync, copyFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import process from "node:process";
@@ -9,15 +9,20 @@ const seaConfigPath = join(root, "sea-config.json");
 const bundlePath = join(distDir, "app.cjs");
 const blobPath = join(distDir, "openclaw-uninstaller.blob");
 const exePath = join(distDir, "openclaw-uninstaller.exe");
+const packagedWebUiDir = join(distDir, "webui");
 const nodeExe = process.execPath;
-const npxCmd = process.platform === "win32" ? "npx.cmd" : "npx";
+const npmExecCmd = process.platform === "win32" ? "npm.cmd" : "npm";
 
 function run(command, args) {
   const result = spawnSync(command, args, {
     cwd: root,
     stdio: "inherit",
-    shell: false
+    shell: process.platform === "win32"
   });
+
+  if (result.error) {
+    throw result.error;
+  }
 
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
@@ -26,7 +31,16 @@ function run(command, args) {
 
 mkdirSync(distDir, { recursive: true });
 
-run(npxCmd, [
+for (const path of [bundlePath, blobPath, exePath, packagedWebUiDir]) {
+  if (existsSync(path)) {
+    rmSync(path, { force: true, recursive: true });
+  }
+}
+
+run(npmExecCmd, [
+  "exec",
+  "--yes",
+  "--",
   "esbuild",
   "src/index.mjs",
   "--bundle",
@@ -49,9 +63,12 @@ writeFileSync(
   "utf8"
 );
 
-run(process.execPath, ["--experimental-sea-config", seaConfigPath]);
+run(nodeExe, ["--experimental-sea-config", seaConfigPath]);
 copyFileSync(nodeExe, exePath);
-run(npxCmd, [
+run(npmExecCmd, [
+  "exec",
+  "--yes",
+  "--",
   "postject",
   exePath,
   "NODE_SEA_BLOB",
@@ -59,3 +76,5 @@ run(npxCmd, [
   "--sentinel-fuse",
   "NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2"
 ]);
+
+cpSync(join(root, "webui"), packagedWebUiDir, { recursive: true });

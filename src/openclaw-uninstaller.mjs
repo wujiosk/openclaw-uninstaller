@@ -1,4 +1,4 @@
-import fs from "node:fs/promises";
+﻿import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { spawn } from "node:child_process";
@@ -6,11 +6,13 @@ import { spawn } from "node:child_process";
 const home = os.homedir();
 const localAppData = process.env.LOCALAPPDATA || path.join(home, "AppData", "Local");
 const appData = process.env.APPDATA || path.join(home, "AppData", "Roaming");
+const desktopDir = path.join(home, "Desktop");
+const startMenuProgramsDir = path.join(appData, "Microsoft", "Windows", "Start Menu", "Programs");
 const nodeDir = process.execPath ? path.dirname(process.execPath) : "C:\\nvm4w\\nodejs";
 
 function timestamp() {
   const now = new Date();
-  const parts = [
+  return [
     now.getFullYear(),
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
@@ -18,8 +20,7 @@ function timestamp() {
     String(now.getHours()).padStart(2, "0"),
     String(now.getMinutes()).padStart(2, "0"),
     String(now.getSeconds()).padStart(2, "0")
-  ];
-  return parts.join("");
+  ].join("");
 }
 
 async function exists(targetPath) {
@@ -28,15 +29,6 @@ async function exists(targetPath) {
     return true;
   } catch {
     return false;
-  }
-}
-
-async function statSize(targetPath) {
-  try {
-    const stats = await fs.stat(targetPath);
-    return stats.size;
-  } catch {
-    return 0;
   }
 }
 
@@ -92,6 +84,36 @@ function buildTargets() {
       label: "Electron 更新缓存",
       kind: "dir",
       path: path.join(localAppData, "@guanjia-openclawelectron-updater")
+    },
+    {
+      id: "programs-openclaw",
+      label: "LocalAppData Programs 安装目录",
+      kind: "dir",
+      path: path.join(localAppData, "Programs", "openclaw")
+    },
+    {
+      id: "programs-openclaw-cn",
+      label: "LocalAppData Programs CN 安装目录",
+      kind: "dir",
+      path: path.join(localAppData, "Programs", "openclaw-cn")
+    },
+    {
+      id: "desktop-shortcut",
+      label: "桌面快捷方式",
+      kind: "file",
+      path: path.join(desktopDir, "OpenClaw.lnk")
+    },
+    {
+      id: "startmenu-shortcut",
+      label: "开始菜单快捷方式",
+      kind: "file",
+      path: path.join(startMenuProgramsDir, "OpenClaw.lnk")
+    },
+    {
+      id: "startmenu-folder",
+      label: "开始菜单程序目录",
+      kind: "dir",
+      path: path.join(startMenuProgramsDir, "OpenClaw")
     },
     {
       id: "global-wrapper-sh",
@@ -150,28 +172,14 @@ function buildTargets() {
   ];
 }
 
-export async function scanOpenClawInstallation() {
-  const targets = buildTargets();
-  const items = [];
+async function collectRuntimeSignals() {
+  const [processes, services, tasks] = await Promise.all([
+    runPowerShellJson("Get-Process | Where-Object { $_.ProcessName -like '*openclaw*' -or $_.Path -like '*openclaw*' } | Select-Object ProcessName,Id,Path"),
+    runPowerShellJson("Get-Service | Where-Object { $_.Name -like '*openclaw*' -or $_.DisplayName -like '*openclaw*' } | Select-Object Name,DisplayName,Status"),
+    runPowerShellJson("Get-ScheduledTask | Where-Object { $_.TaskName -like '*openclaw*' -or $_.TaskPath -like '*openclaw*' } | Select-Object TaskName,TaskPath,State")
+  ]);
 
-  for (const target of targets) {
-    const present = await exists(target.path);
-    const bytes = present ? await collectSize(target.path) : 0;
-    items.push({
-      ...target,
-      present,
-      sizeBytes: bytes,
-      sizeLabel: formatBytes(bytes)
-    });
-  }
-
-  const summary = {
-    found: items.filter((item) => item.present).length,
-    totalBytes: items.reduce((sum, item) => sum + item.sizeBytes, 0),
-    totalLabel: formatBytes(items.reduce((sum, item) => sum + item.sizeBytes, 0))
-  };
-
-  return { items, summary };
+  return { processes, services, tasks };
 }
 
 function runPowerShell(command, cwd) {
@@ -203,6 +211,51 @@ function runPowerShell(command, cwd) {
   });
 }
 
+async function runPowerShellJson(command) {
+  try {
+    const output = await runPowerShell(`${command} | ConvertTo-Json -Depth 5`, process.cwd());
+    if (!output) {
+      return [];
+    }
+    const parsed = JSON.parse(output);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return [];
+  }
+}
+
+export async function scanOpenClawInstallation() {
+  const targets = buildTargets();
+  const items = [];
+
+  for (const target of targets) {
+    const present = await exists(target.path);
+    const bytes = present ? await collectSize(target.path) : 0;
+    items.push({
+      ...target,
+      present,
+      sizeBytes: bytes,
+      sizeLabel: formatBytes(bytes)
+    });
+  }
+
+  const runtime = await collectRuntimeSignals();
+  const totalBytes = items.reduce((sum, item) => sum + item.sizeBytes, 0);
+
+  return {
+    items,
+    summary: {
+      found: items.filter((item) => item.present).length,
+      totalBytes,
+      totalLabel: formatBytes(totalBytes),
+      runningProcesses: runtime.processes.length,
+      services: runtime.services.length,
+      scheduledTasks: runtime.tasks.length
+    },
+    runtime
+  };
+}
+
 async function backupItems(items, backupDir) {
   await fs.mkdir(backupDir, { recursive: true });
   const copied = [];
@@ -230,6 +283,53 @@ async function removeItem(item) {
   return true;
 }
 
+export async function verifyOpenClawRemoval() {
+  const rescan = await scanOpenClawInstallation();
+  return {
+    ok: rescan.summary.found === 0,
+    remainingItems: rescan.items.filter((item) => item.present),
+    summary: rescan.summary,
+    runtime: rescan.runtime
+  };
+}
+
+export async function exportUninstallReport(payload, cwd = process.cwd()) {
+  const reportsDir = path.join(cwd, "dist", "reports");
+  await fs.mkdir(reportsDir, { recursive: true });
+
+  const stamp = timestamp();
+  const jsonPath = path.join(reportsDir, `openclaw-uninstall-report-${stamp}.json`);
+  const mdPath = path.join(reportsDir, `openclaw-uninstall-report-${stamp}.md`);
+
+  const markdown = [
+    "# OpenClaw 卸载报告",
+    "",
+    `生成时间：${new Date().toLocaleString("zh-CN")}`,
+    "",
+    "## 摘要",
+    "",
+    `- 发现项目数：${payload.scan?.summary?.found ?? 0}`,
+    `- 总大小：${payload.scan?.summary?.totalLabel ?? "0 B"}`,
+    `- 已删除项目数：${payload.uninstall?.removed?.length ?? 0}`,
+    `- 卸载后剩余项目数：${payload.verify?.remainingItems?.length ?? 0}`,
+    "",
+    "## 删除日志",
+    "",
+    ...(payload.uninstall?.logs ?? []).map((line) => `- ${line}`),
+    "",
+    "## 卸载后校验",
+    "",
+    ...(payload.verify?.remainingItems?.length
+      ? payload.verify.remainingItems.map((item) => `- 残留：${item.label} - ${item.path}`)
+      : ["- 未发现残留文件项"])
+  ].join("\n");
+
+  await fs.writeFile(jsonPath, JSON.stringify(payload, null, 2), "utf8");
+  await fs.writeFile(mdPath, markdown, "utf8");
+
+  return { jsonPath, mdPath };
+}
+
 export async function uninstallOpenClaw(options = {}) {
   const { backup = true, cwd = process.cwd() } = options;
   const scan = await scanOpenClawInstallation();
@@ -237,8 +337,8 @@ export async function uninstallOpenClaw(options = {}) {
   const logs = [];
 
   if (presentItems.length === 0) {
-    logs.push("未发现 OpenClaw 安装痕迹。");
-    return { ok: true, logs, backupDir: null, removed: [] };
+    const verify = await verifyOpenClawRemoval();
+    return { ok: true, logs: ["未发现 OpenClaw 安装痕迹。"], backupDir: null, removed: [], scan, verify };
   }
 
   let backupDir = null;
@@ -262,17 +362,15 @@ export async function uninstallOpenClaw(options = {}) {
     }
   }
 
-  try {
-    await runPowerShell("Get-Command openclaw -ErrorAction SilentlyContinue | Out-Null", cwd);
-    logs.push("命令缓存刷新检查完成。");
-  } catch {
-    logs.push("命令缓存检查跳过。");
-  }
+  const verify = await verifyOpenClawRemoval();
+  logs.push(verify.ok ? "卸载后校验通过。" : `卸载后仍有 ${verify.remainingItems.length} 项残留。`);
 
   return {
     ok: true,
     logs,
     backupDir,
-    removed
+    removed,
+    scan,
+    verify
   };
 }

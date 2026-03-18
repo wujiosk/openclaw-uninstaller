@@ -4,12 +4,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   scanOpenClawInstallation,
-  uninstallOpenClaw
+  uninstallOpenClaw,
+  verifyOpenClawRemoval,
+  exportUninstallReport
 } from "./openclaw-uninstaller.mjs";
 
 const PORT = 32123;
 const HOST = "127.0.0.1";
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const MODULE_DIR =
+  typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const ROOT =
+  process.execPath &&
+  path.basename(process.execPath).toLowerCase() === "openclaw-uninstaller.exe"
+    ? path.dirname(process.execPath)
+    : path.resolve(MODULE_DIR, "..");
 const PUBLIC_DIR = path.join(ROOT, "webui");
 
 function json(res, status, payload) {
@@ -95,6 +103,39 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/openclaw-uninstall/verify") {
+    try {
+      const payload = await verifyOpenClawRemoval();
+      json(res, 200, { ok: true, ...payload });
+    } catch (error) {
+      json(res, 500, {
+        ok: false,
+        error: error instanceof Error ? error.message : "校验失败"
+      });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/openclaw-uninstall/export-report") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString("utf8");
+    });
+    req.on("end", async () => {
+      try {
+        const parsed = JSON.parse(body || "{}");
+        const payload = await exportUninstallReport(parsed, ROOT);
+        json(res, 200, { ok: true, ...payload });
+      } catch (error) {
+        json(res, 500, {
+          ok: false,
+          error: error instanceof Error ? error.message : "导出报告失败"
+        });
+      }
+    });
+    return;
+  }
+
   await serveStatic(req, res);
 });
 
@@ -104,6 +145,11 @@ export function startServer() {
   });
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+const IS_DIRECT_RUN =
+  typeof __filename !== "undefined"
+    ? process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)
+    : process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (IS_DIRECT_RUN) {
   startServer();
 }

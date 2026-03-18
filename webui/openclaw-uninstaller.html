@@ -19,6 +19,8 @@
       <section class="actions panel">
         <div class="toolbar">
           <button id="scanBtn" class="primary">扫描安装痕迹</button>
+          <button id="verifyBtn">卸载后校验</button>
+          <button id="exportBtn">导出报告</button>
           <button id="uninstallBtn" class="danger">执行卸载</button>
         </div>
         <label class="checkbox">
@@ -35,11 +37,30 @@
         </article>
 
         <article class="panel">
+          <h2>运行时占用</h2>
+          <div id="runtime" class="runtime"></div>
+        </article>
+
+        <article class="panel">
           <h2>执行日志</h2>
           <pre id="logs" class="logs">等待操作</pre>
         </article>
       </section>
     </main>
+
+    <dialog id="confirmDialog" class="dialog">
+      <form method="dialog" class="dialog-card">
+        <h3>确认执行卸载</h3>
+        <p>
+          该操作会删除本机 OpenClaw 相关目录、全局命令包装文件和缓存。建议保留“先备份再卸载”。
+        </p>
+        <menu class="dialog-actions">
+          <button value="cancel">取消</button>
+          <button id="confirmRunBtn" value="confirm" class="danger">确认卸载</button>
+        </menu>
+      </form>
+    </dialog>
+
     <script src="./openclaw-uninstaller.js"></script>
   </body>
   </html>
