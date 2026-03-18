@@ -3,64 +3,75 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OpenClaw 卸载工具</title>
+    <title>OpenClaw 卸载器</title>
     <link rel="stylesheet" href="./openclaw-uninstaller.css" />
   </head>
   <body>
-    <main class="app">
-      <section class="hero">
-        <p class="eyebrow">本地 GUI / 扫描 / 备份 / 卸载</p>
-        <h1>OpenClaw 卸载工具</h1>
-        <p class="sub">
-          扫描本机 OpenClaw 安装痕迹，支持卸载前备份，并输出完整日志。
+    <main class="app-shell">
+      <header class="hero">
+        <p class="hero-tag">Windows · 扫描 · 备份 · 卸载 · 校验</p>
+        <h1>OpenClaw 卸载器</h1>
+        <p class="hero-copy">
+          扫描本机 OpenClaw 安装痕迹，执行备份和卸载，并在结束后生成校验结果与导出报告。
         </p>
-      </section>
+      </header>
 
-      <section class="actions panel">
-        <div class="toolbar">
-          <button id="scanBtn" class="primary">扫描安装痕迹</button>
-          <button id="verifyBtn">卸载后校验</button>
-          <button id="exportBtn">导出报告</button>
-          <button id="uninstallBtn" class="danger">执行卸载</button>
+      <section class="panel control-panel">
+        <div class="button-row">
+          <button id="scanBtn" class="btn btn-primary">重新扫描</button>
+          <button id="verifyBtn" class="btn">校验残留</button>
+          <button id="exportBtn" class="btn">导出报告</button>
+          <button id="uninstallBtn" class="btn btn-danger">开始卸载</button>
         </div>
-        <label class="checkbox">
+
+        <label class="checkbox-row">
           <input id="backupEnabled" type="checkbox" checked />
-          <span>卸载前备份到当前项目 `dist/openclaw-backups`</span>
+          <span>卸载前先备份到当前项目的 `dist/openclaw-backups`</span>
         </label>
-        <div id="summary" class="summary">等待扫描</div>
+
+        <div id="summary" class="summary-banner">等待首次扫描</div>
       </section>
 
-      <section class="content">
+      <section class="dashboard">
         <article class="panel">
-          <h2>扫描结果</h2>
-          <div id="items" class="items"></div>
+          <div class="panel-head">
+            <h2>扫描结果</h2>
+            <span id="itemsCount" class="pill">0 项</span>
+          </div>
+          <div id="items" class="item-list"></div>
         </article>
 
         <article class="panel">
-          <h2>运行时占用</h2>
-          <div id="runtime" class="runtime"></div>
+          <div class="panel-head">
+            <h2>运行状态</h2>
+            <span class="pill">实时信号</span>
+          </div>
+          <div id="runtime" class="runtime-grid"></div>
         </article>
 
-        <article class="panel">
-          <h2>执行日志</h2>
-          <pre id="logs" class="logs">等待操作</pre>
+        <article class="panel panel-wide">
+          <div class="panel-head">
+            <h2>执行日志</h2>
+            <span class="pill">输出</span>
+          </div>
+          <pre id="logs" class="log-output">等待操作</pre>
         </article>
       </section>
     </main>
 
-    <dialog id="confirmDialog" class="dialog">
-      <form method="dialog" class="dialog-card">
+    <dialog id="confirmDialog" class="confirm-dialog">
+      <form method="dialog" class="confirm-card">
         <h3>确认执行卸载</h3>
         <p>
-          该操作会删除本机 OpenClaw 相关目录、全局命令包装文件和缓存。建议保留“先备份再卸载”。
+          该操作会删除 OpenClaw 相关目录、缓存、快捷方式和全局命令入口。建议保留“先备份再卸载”。
         </p>
-        <menu class="dialog-actions">
-          <button value="cancel">取消</button>
-          <button id="confirmRunBtn" value="confirm" class="danger">确认卸载</button>
+        <menu class="confirm-actions">
+          <button value="cancel" class="btn">取消</button>
+          <button value="confirm" class="btn btn-danger">确认卸载</button>
         </menu>
       </form>
     </dialog>
 
     <script src="./openclaw-uninstaller.js"></script>
   </body>
-  </html>
+</html>

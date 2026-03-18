@@ -1,29 +1,24 @@
 ﻿{
   "name": "openclaw-uninstaller",
-  "version": "0.3.3",
-  "description": "A local Windows GUI tool for scanning, backing up and uninstalling OpenClaw.",
+  "version": "0.4.0",
+  "description": "Windows GUI tool for scanning, backing up and removing OpenClaw installations.",
   "type": "module",
   "bin": {
     "openclaw-uninstaller": "./src/index.mjs"
   },
   "scripts": {
+    "dev": "node ./src/index.mjs",
     "start": "node ./src/index.mjs",
-    "start:webui": "node ./src/webui-server.mjs",
-    "start:uninstaller": "node ./src/webui-server.mjs",
-    "check": "node ./src/index.mjs",
-    "build:exe": "node ./scripts/build-exe.mjs"
+    "start:uninstaller": "node ./src/index.mjs",
+    "check": "node --check ./src/index.mjs && node --check ./src/config.mjs && node --check ./src/openclaw-uninstaller.mjs && node --check ./src/webui-server.mjs && node --check ./src/uninstaller/shared.mjs && node --check ./src/uninstaller/system.mjs && node --check ./src/uninstaller/targets.mjs && node --check ./src/uninstaller/report.mjs",
+    "build:exe": "node ./scripts/build-exe.mjs",
+    "clean": "powershell -NoProfile -Command \"if (Test-Path dist) { Remove-Item dist -Recurse -Force }; if (Test-Path node_modules/.cache) { Remove-Item node_modules/.cache -Recurse -Force }\""
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
-  "pkg": {
-    "scripts": [
-      "src/**/*.mjs"
-    ],
-    "assets": [
-      "README.md",
-      "webui/**/*"
-    ],
-    "outputPath": "dist"
+  "devDependencies": {
+    "esbuild": "^0.27.0",
+    "postject": "^1.0.0-alpha.6"
   }
 }

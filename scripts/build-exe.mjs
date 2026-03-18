@@ -5,8 +5,8 @@ import process from "node:process";
 
 const root = process.cwd();
 const distDir = join(root, "dist");
-const seaConfigPath = join(root, "sea-config.json");
-const bundlePath = join(distDir, "app.cjs");
+const seaConfigPath = join(distDir, "sea-config.json");
+const bundlePath = join(distDir, "index.cjs");
 const blobPath = join(distDir, "openclaw-uninstaller.blob");
 const exePath = join(distDir, "openclaw-uninstaller.exe");
 const packagedWebUiDir = join(distDir, "webui");
@@ -31,7 +31,7 @@ function run(command, args) {
 
 mkdirSync(distDir, { recursive: true });
 
-for (const path of [bundlePath, blobPath, exePath, packagedWebUiDir]) {
+for (const path of [bundlePath, blobPath, exePath, packagedWebUiDir, seaConfigPath]) {
   if (existsSync(path)) {
     rmSync(path, { force: true, recursive: true });
   }
@@ -53,7 +53,7 @@ writeFileSync(
   seaConfigPath,
   JSON.stringify(
     {
-      main: "dist/app.cjs",
+      main: "dist/index.cjs",
       output: "dist/openclaw-uninstaller.blob",
       disableExperimentalSEAWarning: true
     },
