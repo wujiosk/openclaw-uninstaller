@@ -1,0 +1,39 @@
+{
+  "name": "openclaw-uninstaller",
+  "version": "0.3.0",
+  "description": "A local Windows GUI tool for scanning, backing up and uninstalling OpenClaw.",
+  "type": "module",
+  "bin": {
+    "claw": "./src/index.mjs"
+  },
+  "scripts": {
+    "start": "node ./src/index.mjs",
+    "start:webui": "node ./src/webui-server.mjs",
+    "start:uninstaller": "node ./src/webui-server.mjs",
+    "vercel:login": "node ./src/index.mjs vercel login",
+    "vercel:whoami": "node ./src/index.mjs vercel whoami",
+    "deploy:vercel": "node ./src/index.mjs deploy vercel .",
+    "check": "node ./src/index.mjs --help",
+    "build:exe": "node ./scripts/build-exe.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "pkg": {
+    "scripts": [
+      "src/**/*.mjs"
+    ],
+    "assets": [
+      "README.md",
+      "MANUAL.zh-CN.md",
+      "claw.config.example.json",
+      "webui/**/*"
+    ],
+    "outputPath": "dist"
+  },
+  "dependencies": {
+    "screenshot-desktop": "^1.15.3",
+    "sharp": "^0.34.5",
+    "tesseract.js": "^7.0.0"
+  }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenClaw 卸载工具</title>
+    <link rel="stylesheet" href="./openclaw-uninstaller.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <p class="eyebrow">本地 GUI / 扫描 / 备份 / 卸载</p>
+        <h1>OpenClaw 卸载工具</h1>
+        <p class="sub">
+          扫描本机 OpenClaw 安装痕迹，支持卸载前备份，并输出完整日志。
+        </p>
+      </section>
+
+      <section class="actions panel">
+        <div class="toolbar">
+          <button id="scanBtn" class="primary">扫描安装痕迹</button>
+          <button id="uninstallBtn" class="danger">执行卸载</button>
+        </div>
+        <label class="checkbox">
+          <input id="backupEnabled" type="checkbox" checked />
+          <span>卸载前备份到当前项目 `dist/openclaw-backups`</span>
+        </label>
+        <div id="summary" class="summary">等待扫描</div>
+      </section>
+
+      <section class="content">
+        <article class="panel">
+          <h2>扫描结果</h2>
+          <div id="items" class="items"></div>
+        </article>
+
+        <article class="panel">
+          <h2>执行日志</h2>
+          <pre id="logs" class="logs">等待操作</pre>
+        </article>
+      </section>
+    </main>
+    <script src="./openclaw-uninstaller.js"></script>
+  </body>
+  </html>

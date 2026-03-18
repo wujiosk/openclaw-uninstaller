@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TFT 云顶助手</title>
+    <link rel="stylesheet" href="./tft-helper.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">本地运行 / 合规辅助</p>
+          <h1>云顶之弈阵容与装备助手</h1>
+          <p class="sub">
+            输入当前对局信息，给出买卡、上卡、装备和经济节奏建议。不控制游戏客户端，不自动点击。
+          </p>
+        </div>
+      </section>
+
+      <section class="panel form-panel">
+        <div class="grid">
+          <label>
+            <span>当前等级</span>
+            <select id="level">
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7" selected>7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </label>
+
+          <label>
+            <span>当前金币</span>
+            <input id="gold" type="number" min="0" value="32" />
+          </label>
+
+          <label>
+            <span>当前血量</span>
+            <input id="hp" type="number" min="1" max="100" value="74" />
+          </label>
+
+          <label>
+            <span>当前阶段</span>
+            <select id="stage">
+              <option value="2-5">2-5</option>
+              <option value="3-2">3-2</option>
+              <option value="3-5">3-5</option>
+              <option value="4-1" selected>4-1</option>
+              <option value="4-5">4-5</option>
+              <option value="5-1">5-1</option>
+              <option value="5-5">5-5</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="stack">
+          <span>已有散件，用空格或逗号分隔</span>
+          <input
+            id="components"
+            type="text"
+            value="大剑 反曲弓 拳套"
+            placeholder="例如：大剑 反曲弓 拳套"
+          />
+        </label>
+
+        <label class="stack">
+          <span>当前商店来牌，用空格或逗号分隔</span>
+          <input
+            id="shop"
+            type="text"
+            value="盖伦 薇恩 蔚 奥恩 金克丝"
+            placeholder="例如：盖伦 薇恩 蔚 奥恩 金克丝"
+          />
+        </label>
+
+        <label class="stack">
+          <span>场上和备战席已有棋子，用空格或逗号分隔</span>
+          <input
+            id="board"
+            type="text"
+            value="盖伦 薇恩 奥恩 洛 金克丝"
+            placeholder="例如：盖伦 薇恩 奥恩 洛 金克丝"
+          />
+        </label>
+
+        <button id="analyze" class="primary">生成建议</button>
+      </section>
+
+      <section class="results">
+        <article class="panel">
+          <h2>推荐阵容方向</h2>
+          <div id="compResult" class="result-block"></div>
+        </article>
+
+        <article class="panel">
+          <h2>买卡建议</h2>
+          <div id="shopResult" class="result-block"></div>
+        </article>
+
+        <article class="panel">
+          <h2>装备建议</h2>
+          <div id="itemResult" class="result-block"></div>
+        </article>
+
+        <article class="panel">
+          <h2>经济与节奏</h2>
+          <div id="economyResult" class="result-block"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="./tft-helper.js"></script>
+  </body>
+  </html>

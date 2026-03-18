@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TFT 无障碍自动识别助手</title>
+    <link rel="stylesheet" href="./tft-auto.css" />
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">本地截图 / 自动识别 / 无障碍辅助</p>
+          <h1>云顶之弈自动识别助手</h1>
+          <p class="sub">
+            自动抓取当前屏幕，识别等级、金币、血量和商店文本，输出买卡建议并支持语音播报。
+          </p>
+        </div>
+      </section>
+
+      <section class="overlay panel" id="overlay">
+        <div class="overlay-label">大字建议</div>
+        <div class="overlay-main" id="overlayMain">等待开始识别</div>
+        <div class="overlay-sub" id="overlaySub">先点击“启动自动识别”</div>
+      </section>
+
+      <section class="controls panel">
+        <div class="toolbar">
+          <button id="startBtn" class="primary">启动自动识别</button>
+          <button id="stopBtn">停止</button>
+          <button id="analyzeBtn">手动识别一次</button>
+        </div>
+
+        <div class="grid">
+          <label>
+            <span>扫描间隔（秒）</span>
+            <input id="interval" type="number" min="2" max="15" value="4" />
+          </label>
+
+          <label>
+            <span>客户端语言</span>
+            <select id="language">
+              <option value="chi_sim+eng" selected>中文客户端</option>
+              <option value="eng">英文客户端</option>
+            </select>
+          </label>
+
+          <label class="toggle">
+            <span>语音播报</span>
+            <input id="voiceEnabled" type="checkbox" checked />
+          </label>
+
+          <label class="toggle">
+            <span>自动循环</span>
+            <input id="loopEnabled" type="checkbox" checked />
+          </label>
+        </div>
+
+        <details class="config">
+          <summary>区域预设与微调</summary>
+          <p class="muted">
+            默认预设按 16:9 全屏客户端估算。如果识别不到数字或商店名，微调这些百分比。
+          </p>
+          <div class="roi-grid" id="roiGrid"></div>
+        </details>
+
+        <details class="config">
+          <summary>候选棋子词库</summary>
+          <textarea id="dictionary" rows="5">盖伦 薇恩 奥恩 金克丝 蔚 洛 安妮 辛德拉 拉克丝 妮蔻 璐璐 俄洛伊 瑟提 厄斐琉斯 慎 艾希 猪妹 烬 德莱文 卡莎 亚索 永恩 佐伊 阿狸 凯隐 瑞兹 婕拉 维克托 赛娜 崔丝塔娜 卡牌</textarea>
+        </details>
+
+        <div class="status-line" id="statusLine">状态：未启动</div>
+      </section>
+
+      <section class="content">
+        <article class="panel">
+          <h2>识别结果</h2>
+          <div class="cards">
+            <div class="card"><strong>等级</strong><p id="levelText">-</p></div>
+            <div class="card"><strong>金币</strong><p id="goldText">-</p></div>
+            <div class="card"><strong>血量</strong><p id="hpText">-</p></div>
+            <div class="card"><strong>商店</strong><p id="shopText">-</p></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>建议</h2>
+          <div class="result-block" id="adviceBlock"></div>
+        </article>
+
+        <article class="panel">
+          <h2>截图预览</h2>
+          <canvas id="previewCanvas" width="1280" height="720"></canvas>
+        </article>
+      </section>
+    </main>
+
+    <script src="./tft-auto.js"></script>
+  </body>
+  </html>
